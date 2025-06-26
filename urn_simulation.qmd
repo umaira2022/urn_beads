@@ -7,10 +7,70 @@ execute:
 ---
 
 ```{r}
-#| message: false 
+#| label: setup
+#| include: false
 
-library(tidyverse)
+library(tidymodels)
+library(broom)
+library(gt)  # For nice tables
+
 
 ```
+
 A potential weakness is that our sample of beads might not be perfectly representative of the entire urn, especially if some beads are more likely to be scooped than others.
+
+$$P(Y = 1) = \frac{1}{1 + e^{-(\beta_0 + \beta_1 X_1 + \beta_2 X_2 + \cdots + \beta_n X_n)}}$$
+
+$$\widehat{\text{logit}(P(\text{color} = \text{red}))} = -0.66$$
+
+
+```{r}
+#| cache: true
+library(tidymodels)
+
+# Make sure color is a factor
+shovel <- shovel |> mutate(color = as.factor(color))
+
+# Fit logistic regression with only the intercept
+fit_color <- logistic_reg(engine = "glm") |> 
+  fit(color ~ 1, data = shovel)
+
+fit_color
+
+```
+print(fit_color)
+
+```{r}
+#| cache: true
+library(broom)
+library(dplyr)
+library(gt)  # For table formatting
+
+# Assuming you have already run a model like this:
+# fit_color <- logistic_reg(engine = "glm") |> 
+#                fit(color ~ 1, data = shovel)
+
+# Get a tidy summary of the model
+tidy_fit <- tidy(fit_color, conf.int = TRUE)
+
+# Select only relevant columns
+tidy_fit_selected <- tidy_fit %>%
+  select(term, estimate, conf.low, conf.high)
+
+# Make a nice table using gt
+tidy_fit_selected %>%
+  gt() %>%
+  fmt_number(columns = c(estimate, conf.low, conf.high), decimals = 2) %>%
+  cols_label(
+    term = "Term",
+    estimate = "Estimate",
+    conf.low = "Lower 95% CI",
+    conf.high = "Upper 95% CI"
+  ) %>%
+  tab_header(
+    title = "Model Summary Table",
+    subtitle = "Estimates with 95% Confidence Intervals"
+  )
+```
+"We model the probability of a bead being red, a binary categorical outcome, as a logistic function of a constant (intercept-only model), assuming no additional covariates."
 
