@@ -2,5 +2,15 @@
 title: "Proportion of red beads"
 author: "umaira nazar"
 format: html
+execute: 
+  echo: false
 ---
+
+```{r}
+#| message: false 
+
+library(tidyverse)
+
+```
+A potential weakness is that our sample of beads might not be perfectly representative of the entire urn, especially if some beads are more likely to be scooped than others.
 
